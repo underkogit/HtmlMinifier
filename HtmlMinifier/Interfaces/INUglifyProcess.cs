@@ -2,8 +2,7 @@
 
 public interface INUglifyProcess
 {
-    public string Call( string content );
+    public string Call(string content);
 
-    public void AddBaseDirectory( string directory );
-
+    public void AddBaseDirectory(string directory);
 }

@@ -4,6 +4,8 @@ using NUglify;
 
 namespace HtmlMinifier.NUglifys;
 
+
+
 public class NUglifyExtractorJavaScript : INUglifyProcess
 {
     private string BaseDirectory { get; set; } = String.Empty;
