@@ -81,6 +81,11 @@ public class HtmlProcessor : IDisposable
                 _jsonOptions.Content = await nUglifyProcess.Call(_jsonOptions.Content);
             }
 
+            var directory = Path.GetDirectoryName(_jsonOptions.PathOutputHtmlFile);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
 
             await File.WriteAllTextAsync(_jsonOptions.PathOutputHtmlFile, contentBase);
             await File.WriteAllTextAsync(_jsonOptions.PathOutputHeaderFile, _jsonOptions.Content);
