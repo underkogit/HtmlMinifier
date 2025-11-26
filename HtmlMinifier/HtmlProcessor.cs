@@ -1,6 +1,7 @@
 ﻿using HtmlMinifier.Interfaces;
 using HtmlMinifier.Structures;
 using Newtonsoft.Json;
+using OllamaNUglifys;
 
 namespace HtmlMinifier;
 
@@ -22,8 +23,8 @@ public class HtmlProcessor : IDisposable
             if (File.ReadAllText(_pathJsonFile) is { } jsonData && !string.IsNullOrEmpty(jsonData))
             {
                 JsonOptions? deserializeObject = JsonConvert.DeserializeObject<JsonOptions>(jsonData);
-                if (deserializeObject != null && File.Exists(deserializeObject.PathHtmlFile) &&
-                    File.Exists(deserializeObject.PathOutputHtmlFile))
+                if (deserializeObject != null && File.Exists(deserializeObject.PathHtmlFile))
+
                 {
                     _jsonOptions = deserializeObject;
                     if (!string.IsNullOrEmpty(_jsonOptions.PathHtmlFile) &&
@@ -32,6 +33,8 @@ public class HtmlProcessor : IDisposable
                         Directory.Exists(directory))
                     {
                         BaseDirectory = directory;
+
+
                         return (IsLoaded = true);
                     }
                 }
@@ -56,7 +59,7 @@ public class HtmlProcessor : IDisposable
         _processes.Add(process);
     }
 
-    public void Build()
+    public async Task Build()
     {
         if (!IsLoaded)
             return;
@@ -66,15 +69,15 @@ public class HtmlProcessor : IDisposable
             _jsonOptions.Content = File.ReadAllText(_jsonOptions.PathHtmlFile);
             foreach (var nUglifyProcess in _processes)
             {
-                _jsonOptions.Content = nUglifyProcess.Call(_jsonOptions.Content);
+                _jsonOptions.Content = await nUglifyProcess.Call(_jsonOptions.Content);
             }
 
-            File.WriteAllText(_jsonOptions.PathOutputHtmlFile, _jsonOptions.Content);
+
+            await File.WriteAllTextAsync(_jsonOptions.PathOutputHtmlFile, _jsonOptions.Content);
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
-            
         }
     }
 
@@ -103,11 +106,15 @@ public class HtmlProcessor : IDisposable
     {
         Console.WriteLine($"Файл: {e.FullPath} был {e.ChangeType}");
         Task.Delay(150);
-        Build();
+        _ = Build();
     }
 
     public void Dispose()
     {
         _watcher?.Dispose();
+        foreach (var nUglifyProcess in _processes)
+        {
+            nUglifyProcess.Dispose();
+        }
     }
 }

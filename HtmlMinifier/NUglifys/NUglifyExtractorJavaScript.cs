@@ -1,21 +1,26 @@
 ﻿using System.Text.RegularExpressions;
 using HtmlMinifier.Interfaces;
 using NUglify;
+using Ollama;
+using OllamaNUglifys;
 
 namespace HtmlMinifier.NUglifys;
-
-
 
 public class NUglifyExtractorJavaScript : INUglifyProcess
 {
     private string BaseDirectory { get; set; } = String.Empty;
+    private IAOllamaClient _ollamaClient = new IAOllamaClient();
 
-    public string Call(string content)
+    public async Task<string> Call(string content)
     {
         if (!Directory.Exists(BaseDirectory))
-            return content;
+            return await Task.FromResult<string>(null);
         var scripts = ExtractJsScripts(content);
-        return ReplaceAllScriptsEmpty(content, scripts) ;
+
+        var result = await _ollamaClient.Comp(string.Join("\n", scripts));
+
+        var resultStr = ReplaceAllScriptsEmpty(content, result.ToArray());
+        return await Task.FromResult<string>(resultStr);
     }
 
     public void AddBaseDirectory(string directory)
@@ -66,6 +71,12 @@ public class NUglifyExtractorJavaScript : INUglifyProcess
                 scriptsCode.Add(script1.Replace("<script>", string.Empty).Replace("</script>", string.Empty));
             }
 
-        return scriptsCode.AsParallel().Select(script => NUglify.Uglify.Js(script).Code).ToArray();
+        return scriptsCode.ToArray();
+        //return scriptsCode.AsParallel().Select(script => NUglify.Uglify.Js(script).Code).ToArray();
+    }
+
+    public void Dispose()
+    {
+        _ollamaClient.Dispose();
     }
 }

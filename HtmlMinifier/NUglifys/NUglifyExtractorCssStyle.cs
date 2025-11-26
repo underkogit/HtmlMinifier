@@ -9,12 +9,11 @@ public class NUglifyExtractorCssStyle : INUglifyProcess
     private string BaseDirectory { get; set; } = String.Empty;
 
 
-    public string Call(string content)
+    public Task<string> Call(string content)
     {
         if (!Directory.Exists(BaseDirectory))
-            return content;
-
-        return ReplaceAllCssEmpty(content, ExtractCssStyles(content));
+            return Task.FromResult<string>(content);
+        return Task.FromResult<string>(ReplaceAllCssEmpty(content, ExtractCssStyles(content)));
     }
 
     private string ReplaceAllCssEmpty(string content, string[] csses)
@@ -72,5 +71,10 @@ public class NUglifyExtractorCssStyle : INUglifyProcess
         }
 
         return cssStyles.AsParallel().Select(script => NUglify.Uglify.Css(script).Code).ToArray();
+    }
+
+    public void Dispose()
+    {
+        // TODO release managed resources here
     }
 }

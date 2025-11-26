@@ -4,13 +4,17 @@ namespace HtmlMinifier.NUglifys;
 
 public class NUglifyHtml : INUglifyProcess
 {
-    public string Call(string content)
+    public Task<string> Call(string content)
     {
-        return NUglify.Uglify.Html(content.Trim()).Code;
+        return Task.FromResult<string>(NUglify.Uglify.Html(content.Trim()).Code);
     }
-    
+
     public void AddBaseDirectory(string directory)
     {
-         
+    }
+
+    public void Dispose()
+    {
+        // TODO release managed resources here
     }
 }

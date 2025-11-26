@@ -9,9 +9,9 @@ using (HtmlProcessor processor = new HtmlProcessor())
         Console.WriteLine("Loaded HtmlMinifier...");
         processor.AddInUglify(new NUglifyHtml());
         processor.AddInUglify(new NUglifyExtractorJavaScript());
-        processor.AddInUglify(new NUglifyExtractorCssStyle());
+        //processor.AddInUglify(new NUglifyExtractorCssStyle());
         processor.AddInUglify(new NUglifyConvertCppHeader());
-        processor.Build();
+        await processor.Build();
         processor.StartTask();
     }
     else

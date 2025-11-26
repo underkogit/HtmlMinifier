@@ -1,8 +1,10 @@
 ﻿namespace HtmlMinifier.Interfaces;
 
-public interface INUglifyProcess
+public interface INUglifyProcess : IDisposable
 {
-    public string Call(string content);
+    public Task<string> Call(string content);
 
     public void AddBaseDirectory(string directory);
+    
+    
 }
