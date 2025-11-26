@@ -30,7 +30,7 @@ public class NUglifyExtractorJavaScript : INUglifyProcess
     private string ReplaceAllScriptsEmpty(string content, string[] scripts)
     {
         content = Regex.Replace(content, "((<script>)|(<script))[\\w\\W]+?<\\/script>", string.Empty);
-        content += $" <script>{string.Join(" ", scripts)}</script>";
+        content += $" <script>{NUglify.Uglify.Js(string.Join(" ", scripts)).Code}</script>";
 
         return content;
     }
@@ -46,11 +46,16 @@ public class NUglifyExtractorJavaScript : INUglifyProcess
         foreach (var script1 in scripts)
             if (Regex.IsMatch(script1, @"((<script>)|(<script))[\w\W]+?><\/script>"))
             {
+
+
+                var nameJsFile = Regex.Match(script1, @"(src=?"".+?"")|(src=.+?\.js)").Value;
+                
                 var srcPath = Path.GetFullPath(
-                    Path.Combine(BaseDirectory,
-                        Regex.Match(script1, @"src=?"".+?""").Value.Replace("src=\"", string.Empty)
+                    Path.Combine(BaseDirectory,nameJsFile
+                        .Replace("src=\"", string.Empty).Replace("src=", string.Empty)
                             .Replace("\"", string.Empty))
                 );
+                
                 if (File.Exists(srcPath))
                 {
                     scriptsCode.Add(File.ReadAllText(srcPath));
@@ -70,7 +75,7 @@ public class NUglifyExtractorJavaScript : INUglifyProcess
             }
 
 
-        return scriptsCode.AsParallel().Select(script => NUglify.Uglify.Js(script).Code).ToArray();
+        return scriptsCode.ToArray();
     }
 
     public void Dispose()

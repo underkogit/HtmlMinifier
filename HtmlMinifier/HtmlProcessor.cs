@@ -1,4 +1,5 @@
 ﻿using HtmlMinifier.Interfaces;
+using HtmlMinifier.NUglifys;
 using HtmlMinifier.Structures;
 using Newtonsoft.Json;
 using OllamaNUglifys;
@@ -13,6 +14,8 @@ public class HtmlProcessor : IDisposable
     public bool IsLoaded { get; private set; }
     private readonly List<INUglifyProcess> _processes = [];
     private FileSystemWatcher _watcher;
+
+    public bool Mode { get; set; } = true;
 
     public bool Loaded(string pathJsonFile = "Options.json")
     {
@@ -67,13 +70,20 @@ public class HtmlProcessor : IDisposable
         try
         {
             _jsonOptions.Content = File.ReadAllText(_jsonOptions.PathHtmlFile);
+            var typeName = typeof(NUglifyConvertCppHeader);
+            string contentBase = "";
             foreach (var nUglifyProcess in _processes)
             {
+                var cTypeName = nUglifyProcess.GetType();
+                if (typeName == cTypeName && Mode)
+                    contentBase = _jsonOptions.Content;
+
                 _jsonOptions.Content = await nUglifyProcess.Call(_jsonOptions.Content);
             }
 
 
-            await File.WriteAllTextAsync(_jsonOptions.PathOutputHtmlFile, _jsonOptions.Content);
+            await File.WriteAllTextAsync(_jsonOptions.PathOutputHtmlFile, contentBase);
+            await File.WriteAllTextAsync(_jsonOptions.PathOutputHeaderFile, _jsonOptions.Content);
         }
         catch (Exception e)
         {
