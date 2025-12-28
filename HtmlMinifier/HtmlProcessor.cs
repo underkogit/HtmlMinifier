@@ -9,7 +9,7 @@ namespace HtmlMinifier;
 public class HtmlProcessor : IDisposable
 {
     private string _pathJsonFile = "Options.json";
-    private JsonOptions _jsonOptions = new JsonOptions();
+    public JsonOptions JsonOptions = new JsonOptions();
     public string BaseDirectory { get; set; } = String.Empty;
     public bool IsLoaded { get; private set; }
     private readonly List<INUglifyProcess> _processes = [];
@@ -29,9 +29,9 @@ public class HtmlProcessor : IDisposable
                 if (deserializeObject != null && File.Exists(deserializeObject.PathHtmlFile))
 
                 {
-                    _jsonOptions = deserializeObject;
-                    if (!string.IsNullOrEmpty(_jsonOptions.PathHtmlFile) &&
-                        Path.GetFullPath(Path.GetDirectoryName(_jsonOptions.PathHtmlFile) ?? string.Empty) is
+                    JsonOptions = deserializeObject;
+                    if (!string.IsNullOrEmpty(JsonOptions.PathHtmlFile) &&
+                        Path.GetFullPath(Path.GetDirectoryName(JsonOptions.PathHtmlFile) ?? string.Empty) is
                             { } directory &&
                         Directory.Exists(directory))
                     {
@@ -69,26 +69,26 @@ public class HtmlProcessor : IDisposable
 
         try
         {
-            _jsonOptions.Content = File.ReadAllText(_jsonOptions.PathHtmlFile);
+            JsonOptions.Content = File.ReadAllText(JsonOptions.PathHtmlFile);
             var typeName = typeof(NUglifyConvertCppHeader);
             string contentBase = "";
             foreach (var nUglifyProcess in _processes)
             {
                 var cTypeName = nUglifyProcess.GetType();
                 if (typeName == cTypeName && Mode)
-                    contentBase = _jsonOptions.Content;
+                    contentBase = JsonOptions.Content;
 
-                _jsonOptions.Content = await nUglifyProcess.Call(_jsonOptions.Content);
+                JsonOptions.Content = await nUglifyProcess.Call(JsonOptions.Content);
             }
 
-            var directory = Path.GetDirectoryName(_jsonOptions.PathOutputHtmlFile);
+            var directory = Path.GetDirectoryName(JsonOptions.PathOutputHtmlFile);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            await File.WriteAllTextAsync(_jsonOptions.PathOutputHtmlFile, contentBase);
-            await File.WriteAllTextAsync(_jsonOptions.PathOutputHeaderFile, _jsonOptions.Content);
+            await File.WriteAllTextAsync(JsonOptions.PathOutputHtmlFile, contentBase);
+            await File.WriteAllTextAsync(JsonOptions.PathOutputHeaderFile, JsonOptions.Content);
         }
         catch (Exception e)
         {
@@ -100,7 +100,7 @@ public class HtmlProcessor : IDisposable
     {
         if (!IsLoaded)
             return;
-        var directoryPath = Path.GetDirectoryName(_jsonOptions.PathHtmlFile);
+        var directoryPath = Path.GetDirectoryName(JsonOptions.PathHtmlFile);
         if (!Directory.Exists(directoryPath))
             return;
 

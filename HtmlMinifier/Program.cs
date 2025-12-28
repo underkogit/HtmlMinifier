@@ -6,13 +6,14 @@ using (HtmlProcessor processor = new HtmlProcessor())
 {
     if (processor.Loaded())
     {
+       
         processor.Mode = true;
         Console.WriteLine("Loaded HtmlMinifier...");
         processor.AddInUglify(new NUglifyHtml());
         processor.AddInUglify(new NUglifyExtractorJavaScript());
         processor.AddInUglify(new NUglifyExtractorCssStyle());
         
-        processor.AddInUglify(new NUglifyConvertCppHeader());
+        processor.AddInUglify(new NUglifyConvertCppHeader().AddParametrName(processor.JsonOptions.NameParametr));
         await processor.Build();
         processor.StartTask();
     }

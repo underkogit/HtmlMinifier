@@ -7,4 +7,7 @@ public class JsonOptions
 
     public string PathOutputHeaderFile { get; set; } = String.Empty;
     public string Content { get; set; } = String.Empty;
+    
+    public string NameParametr { get; set; } = String.Empty;
+    
 }
